@@ -2,12 +2,13 @@ import wpilib
 from wpilib.drive import DifferentialDrive
 from ctre import WPI_TalonSRX
 
+
 class Robot(wpilib.IterativeRobot):
-
     def robotInit(self):
-        '''Create motors and stuff here'''
+        """Create motors and stuff here"""
 
-        self.gamepad = wpilib.XboxController(0)
+        self.joystick = wpilib.Joystick(0)
+        self.gamepad = wpilib.XboxController(1)
 
         # Left side
         self.drive_motor_a = WPI_TalonSRX(0)
@@ -27,12 +28,19 @@ class Robot(wpilib.IterativeRobot):
         self.drive_base.stopMotor()
 
     def teleopPeriodic(self):
-        '''Called on each iteration of the control loop'''
-        throttle = self.gamepad.getY(wpilib.interfaces.GenericHID.Hand.kLeft)
-        turn= self.gamepad.getX(wpilib.interfaces.GenericHID.Hand.kRight)
+        """Called on each iteration of the control loop"""
+        speed = self.gamepad.getY(wpilib.interfaces.GenericHID.Hand.kLeft)
+        turn = -self.gamepad.getX(wpilib.interfaces.GenericHID.Hand.kRight)
 
-        self.drive_base.arcadeDrive(throttle, turn*-1)
+        throttle = (1 - self.joystick.getThrottle()) / 2
+
+        if self.joystick.getTrigger():
+            speed = self.joystick.getY()
+
+            turn = -self.joystick.getZ()
+
+        self.drive_base.arcadeDrive(speed * throttle, turn * throttle)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     wpilib.run(Robot)
